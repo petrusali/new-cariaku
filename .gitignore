@@ -42,7 +42,34 @@ yarn-error.log*
 
 # Web
 *.log
-# Environment variables
+
+# Environment variables and sensitive configuration
 .env
+.env.*
+!.env.example
+*.key
+*.secret
+*secret*
+*credential*
+*password*
+*token*
+*auth*
+
 # API Keys and sensitive configuration
 .kilocode/mcp.json
+.kilocode/*.key
+.kilocode/*.secret
+.kilocode/*credential*
+.kilocode/*auth*
+
+# Config files that might contain secrets
+config.json
+*config*.json
+!gradle.properties
+!**/src/**/config.json
+!**/test/**/config.json
+
+# Backup files
+*.bak
+*.backup
+*~
