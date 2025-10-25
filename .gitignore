@@ -44,3 +44,5 @@ yarn-error.log*
 *.log
 # Environment variables
 .env
+# API Keys and sensitive configuration
+.kilocode/mcp.json
