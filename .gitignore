@@ -23,3 +23,5 @@ node_modules/
 
 # OS specific
 .DS_Store
+# API Keys and sensitive configuration
+.kilocode/mcp.json
