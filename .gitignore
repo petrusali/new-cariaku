@@ -25,6 +25,9 @@ local.properties
 .DS_Store
 Thumbs.db
 
+# Python virtual environment
+.venv/
+
 # Kotlin
 .kotlin/
 
