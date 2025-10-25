@@ -42,3 +42,5 @@ yarn-error.log*
 
 # Web
 *.log
+# Environment variables
+.env
