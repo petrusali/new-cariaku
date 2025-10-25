@@ -1,0 +1,510 @@
+I'll use the RPG method template to create a structured, dependency-aware PRD for CariAku Mobile 2.0. Let me work through this systematically.
+
+Let me use the sequential thinking tool properly:
+
+
+
+
+
+
+
+
+Now I'll create the complete RPG-structured PRD for CariAku Mobile 2.0:
+
+# **CariAku Mobile 2.0 - MCP-Enabled AI Agent Platform**
+## **Repository Planning Graph (RPG) Method PRD**
+
+---
+
+<overview>
+
+## Problem Statement
+Current AI assistant platforms lack domain-specific capabilities and require users to manually switch between different apps for specialized tasks. Generic AI assistants provide broad but shallow functionality, while specialized tools exist in isolation without unified management. Users need a platform where AI agents can automatically acquire domain-specific tools through standardized protocols and intelligently route requests between specialized AIs.
+
+## Target Users
+- **AI Agent Developers**: Create and configure specialized AI agents with domain-specific capabilities
+- **Domain Experts**: Users who need AI assistance for specific tasks (trading, research, analysis)
+- **Workflow Managers**: Teams that need to orchestrate multiple AI agents for complex processes
+
+## Success Metrics
+- 90% success rate in MCP tool discovery and configuration
+- < 2 second response time for AI agent routing decisions
+- 95% conversation context preservation during agent handoffs
+- Consistent UI/UX across Android and Web platforms
+
+</overview>
+
+---
+
+<functional-decomposition>
+
+## Capability Tree
+
+### Capability: MCP Integration
+Dynamic discovery and provisioning of MCP tools for AI agents
+
+#### Feature: Tool Discovery
+- **Description**: Discover available MCP tools from configured servers
+- **Inputs**: MCP server URLs, authentication credentials
+- **Outputs**: List of available tools with metadata
+- **Behavior**: Connect to MCP servers, enumerate available tools, cache tool schemas
+
+#### Feature: Tool Configuration
+- **Description**: Configure MCP tools for specific AI agents
+- **Inputs**: Selected tools, agent configuration, user preferences
+- **Outputs**: Configured tool instances ready for execution
+- **Behavior**: Validate tool compatibility, set up authentication, configure parameters
+
+#### Feature: Tool Execution
+- **Description**: Execute MCP tools during AI agent conversations
+- **Inputs**: Tool call requests, conversation context
+- **Outputs**: Tool execution results, error information
+- **Behavior**: Route tool calls to appropriate MCP servers, handle responses, manage errors
+
+### Capability: AI Agent Management
+Creation, configuration, and lifecycle management of specialized AI agents
+
+#### Feature: Agent Creation
+- **Description**: Create new specialized AI agents with specific capabilities
+- **Inputs**: Agent name, description, capabilities, MCP tool assignments
+- **Outputs**: Configured AI agent instance
+- **Behavior**: Validate agent configuration, assign tools, set up routing rules
+
+#### Feature: Agent Configuration
+- **Description**: Configure agent behavior, personality, and capabilities
+- **Inputs**: Agent settings, behavior parameters, tool assignments
+- **Outputs**: Updated agent configuration
+- **Behavior**: Apply configuration changes, validate dependencies, update routing
+
+#### Feature: Agent Lifecycle
+- **Description**: Manage agent startup, shutdown, and state persistence
+- **Inputs**: Agent instances, system state
+- **Outputs**: Agent state changes, persistence data
+- **Behavior**: Handle agent initialization, state saving/restoration, cleanup
+
+### Capability: Routing Engine
+Intelligent routing of user requests to appropriate specialized AI agents
+
+#### Feature: n8n Integration
+- **Description**: Integrate with external n8n instance for routing logic
+- **Inputs**: User queries, agent capabilities, conversation context
+- **Outputs**: Routing decisions, target agent selection
+- **Behavior**: Call n8n API with routing context, process routing responses
+
+#### Feature: Task-Based Routing
+- **Description**: Route requests based on task type and complexity
+- **Inputs**: User intent, task classification, agent availability
+- **Outputs**: Selected agent for task execution
+- **Behavior**: Analyze task requirements, match with agent capabilities, select optimal agent
+
+#### Feature: Fallback Routing
+- **Description**: Handle routing failures and service unavailability
+- **Inputs**: Routing failures, unavailable agents, error conditions
+- **Outputs**: Alternative routing decisions, error handling
+- **Behavior**: Detect routing failures, select fallback agents, provide graceful degradation
+
+### Capability: Conversation Management
+Unified chat interface and context management across AI agents
+
+#### Feature: Unified Chat Interface
+- **Description**: Provide consistent chat experience across all AI agents
+- **Inputs**: User messages, agent responses, conversation history
+- **Outputs**: Rendered conversation UI, user interactions
+- **Behavior**: Display conversation threads, handle user input, manage UI state
+
+#### Feature: Context Preservation
+- **Description**: Maintain conversation context when switching between agents
+- **Inputs**: Conversation history, agent handoffs, context data
+- **Outputs**: Preserved context for new agents
+- **Behavior**: Extract relevant context, format for target agent, maintain continuity
+
+#### Feature: Agent Handoff
+- **Description**: Seamlessly transfer conversations between specialized agents
+- **Inputs**: Current agent, target agent, conversation context
+- **Outputs**: Handoff completion, context transfer
+- **Behavior**: Coordinate agent transition, transfer context, update UI
+
+### Capability: Cross-Platform UI
+Consistent user experience across Android and Web platforms
+
+#### Feature: Shared UI Components
+- **Description**: Reusable UI components for both platforms
+- **Inputs**: Design system, platform capabilities
+- **Outputs**: Composable UI components
+- **Behavior**: Implement platform-agnostic components, handle platform differences
+
+#### Feature: Platform Adaptation
+- **Description**: Adapt UI for specific platform conventions and capabilities
+- **Inputs**: Platform type, device capabilities, user preferences
+- **Outputs**: Platform-optimized UI
+- **Behavior**: Detect platform, apply platform-specific styling, handle platform APIs
+
+</functional-decomposition>
+
+---
+
+<structural-decomposition>
+
+## Repository Structure
+
+```
+cariaku-mobile-2.0/
+├── shared/
+│   ├── src/
+│   │   ├── commonMain/
+│   │   │   ├── kotlin/
+│   │   │   │   ├── foundation/
+│   │   │   │   │   ├── error-handling/
+│   │   │   │   │   ├── base-types/
+│   │   │   │   │   └── config/
+│   │   │   │   ├── mcp-integration/
+│   │   │   │   │   ├── tool-discovery.kt
+│   │   │   │   │   ├── tool-configuration.kt
+│   │   │   │   │   ├── tool-execution.kt
+│   │   │   │   │   └── index.kt
+│   │   │   │   ├── agent-management/
+│   │   │   │   │   ├── agent-creation.kt
+│   │   │   │   │   ├── agent-configuration.kt
+│   │   │   │   │   ├── agent-lifecycle.kt
+│   │   │   │   │   └── index.kt
+│   │   │   │   ├── routing/
+│   │   │   │   │   ├── n8n-integration.kt
+│   │   │   │   │   ├── task-based-routing.kt
+│   │   │   │   │   ├── fallback-routing.kt
+│   │   │   │   │   └── index.kt
+│   │   │   │   ├── conversation/
+│   │   │   │   │   ├── chat-interface.kt
+│   │   │   │   │   ├── context-preservation.kt
+│   │   │   │   │   ├── agent-handoff.kt
+│   │   │   │   │   └── index.kt
+│   │   │   │   └── ui-common/
+│   │   │   │       ├── shared-components.kt
+│   │   │   │       ├── platform-adaptation.kt
+│   │   │   │       └── index.kt
+│   │   │   └── resources/
+│   │   ├── androidMain/
+│   │   │   └── kotlin/
+│   │   │       └── platform/
+│   │   │           └── android-app.kt
+│   │   └── jsMain/
+│   │       └── kotlin/
+│   │           └── platform/
+│   │               └── web-app.kt
+├── android/
+│   └── src/
+│       └── main/
+│           └── kotlin/
+│               └── MainActivity.kt
+├── web/
+│   └── src/
+│       └── jsMain/
+│           └── kotlin/
+│               └── Main.kt
+├── tests/
+│   ├── commonTest/
+│   ├── androidTest/
+│   └── jsTest/
+└── docs/
+```
+
+## Module Definitions
+
+### Module: foundation/
+- **Maps to capability**: Foundation utilities
+- **Responsibility**: Provide basic types, error handling, and configuration
+- **File structure**:
+  ```
+  foundation/
+  ├── error-handling.kt
+  ├── base-types.kt
+  └── config.kt
+  ```
+- **Exports**:
+  - `Result<T, E>` - Standardized result type
+  - `AppError` - Base error class hierarchy
+  - `AppConfig` - Configuration management
+
+### Module: mcp-integration/
+- **Maps to capability**: MCP Integration
+- **Responsibility**: Handle MCP server communication and tool management
+- **File structure**:
+  ```
+  mcp-integration/
+  ├── tool-discovery.kt
+  ├── tool-configuration.kt
+  ├── tool-execution.kt
+  └── index.kt
+  ```
+- **Exports**:
+  - `discoverTools(serverUrl)` - Discover available MCP tools
+  - `configureTool(tool, agent)` - Configure tool for specific agent
+  - `executeTool(call, context)` - Execute MCP tool with context
+
+### Module: agent-management/
+- **Maps to capability**: AI Agent Management
+- **Responsibility**: Manage AI agent lifecycle and configuration
+- **File structure**:
+  ```
+  agent-management/
+  ├── agent-creation.kt
+  ├── agent-configuration.kt
+  ├── agent-lifecycle.kt
+  └── index.kt
+  ```
+- **Exports**:
+  - `createAgent(config)` - Create new specialized AI agent
+  - `configureAgent(agent, settings)` - Update agent configuration
+  - `AgentManager` - Manage agent lifecycle and state
+
+### Module: routing/
+- **Maps to capability**: Routing Engine
+- **Responsibility**: Handle intelligent routing between AI agents
+- **File structure**:
+  ```
+  routing/
+  ├── n8n-integration.kt
+  ├── task-based-routing.kt
+  ├── fallback-routing.kt
+  └── index.kt
+  ```
+- **Exports**:
+  - `routeQuery(query, context)` - Route user query to appropriate agent
+  - `N8nClient` - Interface to external n8n service
+  - `RoutingEngine` - Core routing logic with fallbacks
+
+### Module: conversation/
+- **Maps to capability**: Conversation Management
+- **Responsibility**: Handle chat interface and context management
+- **File structure**:
+  ```
+  conversation/
+  ├── chat-interface.kt
+  ├── context-preservation.kt
+  ├── agent-handoff.kt
+  └── index.kt
+  ```
+- **Exports**:
+  - `ConversationManager` - Manage conversation state and history
+  - `preserveContext(source, target)` - Transfer context between agents
+  - `ChatInterface` - Unified chat UI components
+
+### Module: ui-common/
+- **Maps to capability**: Cross-Platform UI
+- **Responsibility**: Provide shared UI components for both platforms
+- **File structure**:
+  ```
+  ui-common/
+  ├── shared-components.kt
+  ├── platform-adaptation.kt
+  └── index.kt
+  ```
+- **Exports**:
+  - `MessageBubble`, `AgentSelector`, `ToolPanel` - Shared UI components
+  - `adaptForPlatform(component)` - Platform-specific UI adaptations
+
+</structural-decomposition>
+
+---
+
+<dependency-graph>
+
+## Dependency Chain
+
+### Foundation Layer (Phase 0)
+No dependencies - these are built first.
+
+- **foundation/**: Provides base types, error handling, and configuration
+- **config/**: Application configuration and environment management
+
+### Core Layer (Phase 1)
+- **mcp-integration/**: Depends on [foundation, config]
+- **agent-management/**: Depends on [foundation, mcp-integration]
+- **routing/**: Depends on [foundation, config]
+
+### Application Layer (Phase 2)
+- **conversation/**: Depends on [agent-management, routing, foundation]
+- **ui-common/**: Depends on [conversation, foundation]
+
+### Platform Layer (Phase 3)
+- **android-app/**: Depends on [ui-common, mcp-integration, agent-management, routing, conversation]
+- **web-app/**: Depends on [ui-common, mcp-integration, agent-management, routing, conversation]
+
+</dependency-graph>
+
+---
+
+<implementation-roadmap>
+
+## Development Phases
+
+### Phase 0: Foundation Setup
+**Goal**: Establish core infrastructure and shared types
+
+**Entry Criteria**: Clean KMP project repository
+
+**Tasks**:
+- [ ] Setup Kotlin Multiplatform project structure (depends on: none)
+  - Acceptance criteria: Project builds successfully for both Android and Web targets
+  - Test strategy: Basic build verification tests
+
+- [ ] Implement foundation types and error handling (depends on: none)
+  - Acceptance criteria: Result types, error hierarchy, and base models available
+  - Test strategy: Unit tests for all foundation types
+
+- [ ] Create configuration system (depends on: none)
+  - Acceptance criteria: Configurable MCP servers, n8n endpoints, and app settings
+  - Test strategy: Configuration loading and validation tests
+
+**Exit Criteria**: All foundation modules compile and pass tests
+
+**Delivers**: Reusable foundation that other modules can depend on
+
+---
+
+### Phase 1: Core Capabilities
+**Goal**: Implement MCP integration, agent management, and routing engine
+
+**Entry Criteria**: Phase 0 complete
+
+**Tasks**:
+- [ ] Build MCP integration module (depends on: [foundation])
+  - Acceptance criteria: Can discover, configure, and execute MCP tools
+  - Test strategy: Integration tests with mock MCP servers
+
+- [ ] Implement agent management system (depends on: [foundation, mcp-integration])
+  - Acceptance criteria: Create, configure, and manage AI agent lifecycle
+  - Test strategy: Unit tests for agent creation and configuration
+
+- [ ] Develop routing engine with n8n integration (depends on: [foundation])
+  - Acceptance criteria: Route queries to appropriate agents via n8n workflows
+  - Test strategy: Integration tests with n8n mock service
+
+**Exit Criteria**: Core capabilities work end-to-end with mock services
+
+**Delivers**: Functional AI agent platform without UI
+
+---
+
+### Phase 2: Conversation & UI
+**Goal**: Build conversation management and shared UI components
+
+**Entry Criteria**: Phase 1 complete
+
+**Tasks**:
+- [ ] Implement conversation management (depends on: [agent-management, routing])
+  - Acceptance criteria: Unified chat interface with context preservation
+  - Test strategy: Conversation flow tests with agent handoffs
+
+- [ ] Create shared UI components (depends on: [conversation])
+  - Acceptance criteria: Reusable Compose components for both platforms
+  - Test strategy: UI component tests and screenshot tests
+
+**Exit Criteria**: Complete shared application logic with UI components
+
+**Delivers**: Functional cross-platform application in shared code
+
+---
+
+### Phase 3: Platform Integration
+**Goal**: Deploy to Android and Web platforms
+
+**Entry Criteria**: Phase 2 complete
+
+**Tasks**:
+- [ ] Build Android application (depends on: [ui-common, all core modules])
+  - Acceptance criteria: Fully functional Android app with all features
+  - Test strategy: Android instrumentation tests
+
+- [ ] Build Web application (depends on: [ui-common, all core modules])
+  - Acceptance criteria: Fully functional PWA with all features
+  - Test strategy: Web browser automation tests
+
+- [ ] Cross-platform testing and optimization (depends on: [android-app, web-app])
+  - Acceptance criteria: Consistent behavior and performance across platforms
+  - Test strategy: Cross-platform compatibility tests
+
+**Exit Criteria**: Both Android and Web apps are production-ready
+
+**Delivers**: Complete CariAku Mobile 2.0 application on both platforms
+
+</implementation-roadmap>
+
+---
+
+<test-strategy>
+
+## Test Pyramid
+
+```
+        /\
+       /E2E\       ← 20% (Platform-specific end-to-end tests)
+      /------\
+     /Integration\ ← 30% (Module interaction tests)
+    /------------\
+   /  Unit Tests  \ ← 50% (Fast, isolated component tests)
+  /----------------\
+```
+
+## Coverage Requirements
+- Line coverage: 80% minimum
+- Branch coverage: 75% minimum
+- Function coverage: 85% minimum
+- Statement coverage: 80% minimum
+
+## Critical Test Scenarios
+
+### MCP Integration Module
+**Happy path**:
+- Discover available tools from MCP server
+- Expected: Returns list of tools with correct metadata
+
+**Edge cases**:
+- MCP server unavailable during discovery
+- Expected: Graceful error handling with retry mechanism
+
+**Error cases**:
+- Invalid tool configuration parameters
+- Expected: Clear error messages with configuration guidance
+
+**Integration points**:
+- Tool execution during agent conversation
+- Expected: Seamless tool integration with conversation flow
+
+### Routing Engine
+**Happy path**:
+- Route query to appropriate specialized agent
+- Expected: Correct agent selected based on task type
+
+**Edge cases**:
+- n8n service timeout
+- Expected: Fallback to local routing logic
+
+**Error cases**:
+- No suitable agent available for task
+- Expected: Clear message suggesting alternative approaches
+
+**Integration points**:
+- Agent handoff during complex workflows
+- Expected: Smooth transition with context preservation
+
+### Conversation Management
+**Happy path**:
+- Maintain context across agent switches
+- Expected: New agent has full conversation history
+
+**Edge cases**:
+- Large conversation history exceeding limits
+- Expected: Intelligent context summarization
+
+**Error cases**:
+- Agent becomes unavailable mid-conversation
+- Expected: Graceful degradation with user notification
+
+## Test Generation Guidelines
+- Focus on MCP protocol compliance and error scenarios
+- Test n8n integration with both success and failure cases
+- Verify cross-platform consistency for UI components
+- Include performance tests for tool execution and routing
+- Test agent lifecycle management under various conditions
+
+</test

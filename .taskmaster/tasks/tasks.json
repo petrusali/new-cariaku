@@ -1,0 +1,651 @@
+{
+  "master": {
+    "tasks": [
+      {
+        "id": 1,
+        "title": "Setup Kotlin Multiplatform Project Structure",
+        "description": "Initialize a new Kotlin Multiplatform (KMP) project targeting Android and Web (JS/WASM). Configure Gradle build scripts for shared modules and platform-specific applications as outlined in the PRD's repository structure.",
+        "details": "Use the official Kotlin Multiplatform wizard to create the project structure specified in the PRD (`shared/`, `android/`, `web/`). Configure `build.gradle.kts` files for the `shared` module with `androidTarget` and `js` (with browser target) configurations. Ensure a basic 'Hello World' application can be built and run on both an Android emulator and a local web server.",
+        "testStrategy": "Verify that the Gradle `build` task completes successfully for all modules. Run the empty Android app on an emulator to confirm it launches. Serve and open the empty Web app in a browser to confirm it loads.",
+        "priority": "high",
+        "dependencies": [],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 2,
+        "title": "Implement Core Foundation Module",
+        "description": "Develop the `foundation` module containing base types, a standardized error handling system (`Result`, `AppError`), and a configuration management system as specified in the PRD.",
+        "details": "In `shared/src/commonMain/kotlin/foundation/`, create files for error handling, base data types, and configuration. Implement a sealed class `AppError` for a typed error hierarchy. Create a generic `Result<T, E>` class for handling success/failure cases. The `AppConfig` class should load settings like MCP server URLs and n8n endpoints from a platform-agnostic source (e.g., bundled resources).",
+        "testStrategy": "Write unit tests in `shared/src/commonTest/` for the `Result` type, error class hierarchy, and configuration loading logic. Mock configuration sources to test different environments and validate correct parsing.",
+        "priority": "high",
+        "dependencies": [
+          1
+        ],
+        "status": "pending",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Implement Standardized Error Handling System",
+            "description": "Create the generic `Result<T, E>` class and the sealed `AppError` class hierarchy for consistent error management across the application.",
+            "dependencies": [],
+            "details": "In `shared/src/commonMain/kotlin/foundation/`, create a new file for error handling. Implement a generic sealed class `Result<T, E>` with `Success(val data: T)` and `Failure(val error: E)` subclasses. Also, define a sealed class `AppError` to serve as the base for a typed error hierarchy.",
+            "status": "pending",
+            "testStrategy": "Unit tests will be written in a subsequent task to verify the behavior of `Result`'s mapping functions and the structure of `AppError`."
+          },
+          {
+            "id": 2,
+            "title": "Define Core Base Data Types",
+            "description": "Establish common, reusable data types and type aliases within the foundation module to ensure consistency and improve code readability.",
+            "dependencies": [],
+            "details": "In `shared/src/commonMain/kotlin/foundation/`, create a file for base data types. Define any project-wide type aliases or simple data classes that will be used across multiple modules to avoid duplication.",
+            "status": "pending",
+            "testStrategy": "Correctness will be verified primarily through code review and successful compilation and usage in other modules. Specific unit tests are not required unless the types contain business logic."
+          },
+          {
+            "id": 3,
+            "title": "Implement Configuration Management Logic",
+            "description": "Develop the `AppConfig` class to load and provide access to application settings like server URLs and API endpoints from a platform-agnostic source.",
+            "dependencies": [],
+            "details": "In `shared/src/commonMain/kotlin/foundation/`, create an `AppConfig` class. This class will be responsible for loading settings from a bundled resource (e.g., a JSON file). Implement the necessary platform-specific expect/actual functions for resource loading if required by KMP.",
+            "status": "pending",
+            "testStrategy": "Testing will involve creating a mock configuration source to validate that the `AppConfig` class correctly parses valid data and handles malformed or missing configuration gracefully."
+          },
+          {
+            "id": 4,
+            "title": "Create Unit Tests for Core Foundation Components",
+            "description": "Write comprehensive unit tests for the error handling system (`Result`, `AppError`) and the configuration management logic (`AppConfig`) to ensure they are robust and function correctly.",
+            "dependencies": [
+              1,
+              3
+            ],
+            "details": "In the `shared/src/commonTest/` directory, create test files corresponding to the foundation components. For `Result`, test success and failure cases, as well as helper functions like `map` and `flatMap`. For `AppConfig`, use the mocked configuration source to test various scenarios.",
+            "status": "pending",
+            "testStrategy": "Utilize the `kotlin.test` library for assertions. The tests for `AppConfig` will depend on the mock configuration source implementation to simulate different environments and error conditions."
+          },
+          {
+            "id": 5,
+            "title": "Implement Mocking for Configuration Sources for Test Environments",
+            "description": "Create a mockable interface and implementation for the configuration data source to allow for isolated and deterministic testing of the `AppConfig` loader.",
+            "dependencies": [
+              3
+            ],
+            "details": "Refactor the `AppConfig` class to depend on a configuration provider interface rather than a concrete file reader. In the `commonTest` source set, create a mock implementation of this interface that can return predefined configuration strings for testing purposes.",
+            "status": "pending",
+            "testStrategy": "This task's output will be directly consumed by the unit tests in the 'Create Unit Tests for Core Foundation Components' task. The success of those tests will validate this implementation."
+          }
+        ]
+      },
+      {
+        "id": 3,
+        "title": "Build MCP Integration Module",
+        "description": "Implement the logic for executing tools based on a provided MCP configuration. This module will handle all HTTP communication for tool execution, but will no longer be responsible for fetching the configuration file itself, as this is now handled by the `backend-integration` module (Task 11).",
+        "status": "pending",
+        "dependencies": [
+          11
+        ],
+        "priority": "high",
+        "details": "In `shared/src/commonMain/kotlin/mcp-integration/`, implement the `executeTool` function. This function will receive an `McpConfig` object (fetched by the `backend-integration` module from Task 11) and use it to run a specified tool. The module will still use the Ktor HTTP client for the actual tool execution network requests and `kotlinx.serialization` for modeling the execution data classes.",
+        "testStrategy": "Create integration tests in `shared/src/commonTest/` using Ktor's `MockEngine` to test the `executeTool` function. Tests should cover the happy path execution and various error scenarios like network failures and invalid server responses (e.g., 4xx/5xx status codes). The `McpConfig` object will be provided as a test input, as fetching is no longer part of this module.",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Model MCP Configuration and Execution Schemas",
+            "description": "Define Kotlin data classes to represent the `mcp.json` configuration file structure, as well as the `ExecutionRequest` and `ExecutionResponse` for MCP tool calls. Annotate these classes for `kotlinx.serialization`.",
+            "dependencies": [],
+            "details": "In `shared/src/commonMain/kotlin/mcp-integration/model/`, create serializable data classes for `McpConfig`, `ToolDefinition`, `ExecutionRequest`, and `ExecutionResponse`. Ensure these models can correctly parse the JSON from the backend configuration file and the tool execution endpoints.",
+            "status": "pending",
+            "testStrategy": "Write unit tests to verify that sample JSON for the config file and execution payloads correctly deserialize into the data class objects and vice-versa."
+          },
+          {
+            "id": 2,
+            "title": "Integrate and Configure Ktor HTTP Client",
+            "description": "Set up a reusable Ktor `HttpClient` instance for the MCP module. This client must be configured for Kotlin Multiplatform and include the necessary plugins for JSON handling.",
+            "dependencies": [
+              1
+            ],
+            "details": "Create a shared Ktor client instance. Install the `ContentNegotiation` plugin and configure it to use `kotlinx.serialization.json` with the data classes defined in the previous step. Set up default headers if required.",
+            "status": "pending",
+            "testStrategy": "The proper configuration of the client will be implicitly tested by the integration tests for the functions that use it. No dedicated tests are needed for the setup itself."
+          },
+          {
+            "id": 3,
+            "title": "Implement `executeTool` Function",
+            "description": "Implement the `executeTool` function. This function will trigger the execution of a tool defined in the fetched configuration by sending input arguments to the MCP server.",
+            "dependencies": [
+              2
+            ],
+            "details": "Implement the `executeTool` function to take an `McpConfig` object, a tool identifier, and input arguments. It will look up the tool's endpoint and other details from the provided `McpConfig`. It will then use the Ktor client to make the execution POST request and parse the tool's output from the response body.",
+            "status": "pending",
+            "testStrategy": "This function will be tested as part of the integration test suite using Ktor's `MockEngine` to simulate a successful execution result, long-running tasks, and execution failures."
+          },
+          {
+            "id": 4,
+            "title": "Write Integration Tests for `executeTool`",
+            "description": "Develop a comprehensive test suite in `shared/src/commonTest/` for the `executeTool` function using Ktor's `MockEngine`.",
+            "dependencies": [
+              3
+            ],
+            "details": "Create test cases for `executeTool`. Test the 'happy path' with valid 200 OK responses, as well as error scenarios like network failures and invalid server responses (e.g., 400, 500 status codes). The `McpConfig` will be a mocked input for these tests.",
+            "status": "pending",
+            "testStrategy": "The `MockEngine` will be configured with request handlers that return predefined JSON payloads for tool results or error conditions to validate the client logic."
+          }
+        ]
+      },
+      {
+        "id": 4,
+        "title": "Implement AI Agent Management System",
+        "description": "Create the `agent-management` module to handle the creation, configuration, and lifecycle (startup, shutdown, state persistence) of specialized AI agents.",
+        "details": "In `shared/src/commonMain/kotlin/agent-management/`, create an `AgentManager` class. Implement `createAgent` which takes a configuration object (name, description, assigned MCP tools). This module will use the `mcp-integration` module to validate and manage the tools assigned to an agent. Agent state should be managed in memory initially, with hooks for future persistence.",
+        "testStrategy": "Write unit tests in `shared/src/commonTest/` for the `AgentManager`. Test agent creation with valid and invalid configurations. Verify that agent state transitions are handled correctly. Mock the `mcp-integration` module to test tool assignment and validation logic without actual network calls.",
+        "priority": "high",
+        "dependencies": [
+          3
+        ],
+        "status": "pending",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Design and Implement AgentManager Class and Agent Configuration Data Model",
+            "description": "Create the basic structure for the `AgentManager` class within the `agent-management` module. Define the Kotlin data classes for agent configuration, including properties for name, description, and a list of assigned MCP tool identifiers.",
+            "dependencies": [],
+            "details": "In `shared/src/commonMain/kotlin/agent-management/`, create the `AgentManager.kt` file. Define the `AgentManager` class with a private map to hold agent instances. Create an `AgentConfig` data class with fields: `name: String`, `description: String`, `tools: List<String>`.",
+            "status": "pending",
+            "testStrategy": "Code review to ensure the data models are well-defined and the class structure is sound. No unit tests are required for this initial scaffolding task."
+          },
+          {
+            "id": 2,
+            "title": "Implement `createAgent` Method for In-Memory Agent Instantiation",
+            "description": "Implement the `createAgent` method in the `AgentManager` class. This method will take an `AgentConfig` object, create a new agent instance, and store it in the manager's internal, in-memory collection.",
+            "dependencies": [
+              1
+            ],
+            "details": "Inside the `AgentManager` class, implement the function `fun createAgent(config: AgentConfig): Agent`. This function should instantiate an `Agent` object (a new class to be defined) and add it to a `MutableMap<String, Agent>` where the key is a generated agent ID.",
+            "status": "pending",
+            "testStrategy": "Write a basic unit test to verify that calling `createAgent` with a valid config adds a new agent to the manager's internal list and that the agent's properties match the provided configuration."
+          },
+          {
+            "id": 3,
+            "title": "Integrate `mcp-integration` Module for Agent Tool Validation",
+            "description": "Enhance the `createAgent` method to use the `mcp-integration` module. Before creating an agent, validate that the tools specified in the configuration are valid and available by calling the appropriate function in the MCP module.",
+            "dependencies": [
+              2
+            ],
+            "details": "Inject a dependency for the `mcp-integration` module into `AgentManager`. In the `createAgent` method, before creating the agent instance, iterate through the `tools` list in the `AgentConfig` and call a `mcpIntegration.validateTool(toolId)` function. If any tool is invalid, the creation should fail with an appropriate error.",
+            "status": "pending",
+            "testStrategy": "Unit tests will require mocking the `mcp-integration` module. Test scenarios where all tools are valid, some are invalid, and the MCP module returns an error. Verify that agent creation succeeds or fails as expected."
+          },
+          {
+            "id": 4,
+            "title": "Implement Agent Lifecycle Methods (Startup, Shutdown) and State Management",
+            "description": "Add methods to the `AgentManager` to manage the lifecycle of individual agents, such as `startAgent(agentId)` and `stopAgent(agentId)`. Implement basic in-memory state management for agents (e.g., 'running', 'stopped') and include hooks for future state persistence.",
+            "dependencies": [
+              2
+            ],
+            "details": "Add an `enum class AgentStatus { PENDING, RUNNING, STOPPED }` to the agent model. Implement `startAgent(agentId: String)` and `stopAgent(agentId: String)` in `AgentManager` to update the agent's status in the in-memory map. Add placeholder functions like `onPersistState()` and `onLoadState()` for future implementation.",
+            "status": "pending",
+            "testStrategy": "Write unit tests to verify that calling `startAgent` and `stopAgent` correctly transitions the agent's status. Test edge cases like trying to start an already running agent or stopping a non-existent agent."
+          },
+          {
+            "id": 5,
+            "title": "Write Comprehensive Unit Tests for AgentManager with Mocked Dependencies",
+            "description": "Create a complete suite of unit tests for the `AgentManager` in `shared/src/commonTest/`. This includes mocking the `mcp-integration` module to thoroughly test the agent creation and tool validation logic without relying on external services.",
+            "dependencies": [
+              3,
+              4
+            ],
+            "details": "In `shared/src/commonTest/kotlin/agent-management/`, create `AgentManagerTest.kt`. Use a mocking library (like MockK) to create a mock of the `mcp-integration` service. Write tests covering successful agent creation, creation failure due to invalid tools, and correct lifecycle state transitions.",
+            "status": "pending",
+            "testStrategy": "Run the test suite and ensure all tests pass. Code coverage for the `AgentManager` class should be checked to ensure all critical paths, including error handling, are tested."
+          }
+        ]
+      },
+      {
+        "id": 6,
+        "title": "Implement Conversation Management Module",
+        "description": "Develop the `conversation` module to manage the unified chat state, preserve context during agent handoffs, and coordinate the overall conversational flow between the user, agents, and routing engine.",
+        "details": "In `shared/src/commonMain/kotlin/conversation/`, create a `ConversationManager`. This class will maintain the list of messages and the current conversation state. Implement the `preserveContext` logic to summarize or extract relevant history when the `RoutingEngine` signals an agent handoff. This manager will be the central orchestrator for a user's session.",
+        "testStrategy": "Write unit tests for the `ConversationManager`. Simulate a multi-step conversation flow: user message -> routing -> agent response -> user message -> agent handoff. Verify that conversation history is maintained and that context is correctly extracted and passed during the handoff.",
+        "priority": "high",
+        "dependencies": [
+          4
+        ],
+        "status": "pending",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Define ConversationManager and Core Data Models",
+            "description": "Create the initial `ConversationManager` class and the necessary data models for representing messages and the overall conversation state, establishing the foundational structure of the module.",
+            "dependencies": [],
+            "details": "In the `shared/src/commonMain/kotlin/conversation/` directory, create the `ConversationManager` class. Define supporting data classes such as `Message` (with properties for sender, content, timestamp) and `ConversationState` (containing a list of `Message` objects).",
+            "status": "pending",
+            "testStrategy": "Write unit tests to verify the correct instantiation of `ConversationManager` and its associated data models. Ensure the initial state is empty and all properties are correctly initialized."
+          },
+          {
+            "id": 2,
+            "title": "Implement Message History and State Management Logic",
+            "description": "Add functionality to the `ConversationManager` to manage the list of messages, allowing new messages from users and agents to be added to the state and the history to be retrieved.",
+            "dependencies": [
+              1
+            ],
+            "details": "Implement methods within `ConversationManager` like `addMessage(message: Message)` to append a new message to the history list in `ConversationState`. Also, add a `getHistory(): List<Message>` method to retrieve the full, ordered conversation log.",
+            "status": "pending",
+            "testStrategy": "Write unit tests to verify that `addMessage` correctly appends messages to the history. Test that `getHistory` returns the complete and correctly ordered list of all added messages."
+          },
+          {
+            "id": 3,
+            "title": "Implement Context Preservation Logic for Agent Handoffs",
+            "description": "Develop the `preserveContext` function within the `ConversationManager` to handle the summarization or extraction of relevant history when an agent handoff is signaled by the `RoutingEngine`.",
+            "dependencies": [
+              1,
+              2
+            ],
+            "details": "Implement a `preserveContext()` method in `ConversationManager`. This method will be triggered by an external signal. Its logic should process the existing message history and return a condensed context (e.g., a summary string or the last N messages) suitable for a new agent.",
+            "status": "pending",
+            "testStrategy": "Write unit tests for the `preserveContext` method. Simulate a conversation history with multiple messages, call the method, and verify that the returned context is correctly generated according to the defined extraction or summarization logic."
+          }
+        ]
+      },
+      {
+        "id": 7,
+        "title": "Create Shared UI Components using Compose Multiplatform",
+        "description": "Develop a set of reusable UI components for the chat interface using Compose Multiplatform, ensuring they can be rendered on both Android and Web platforms.",
+        "details": "In `shared/src/commonMain/kotlin/ui-common/`, create composable functions for `MessageBubble`, `AgentSelector`, `ToolPanel`, and the main `ChatInterface`. Use a state holder or ViewModel pattern to manage UI state, which will be driven by the `ConversationManager`. Implement basic platform adaptation logic to handle minor UI differences.",
+        "testStrategy": "For Android, write UI component tests and screenshot tests in `shared/src/androidTest/` to verify visual correctness and prevent regressions. For Web, manual testing and visual inspection will be the primary validation method for the shared components.",
+        "priority": "medium",
+        "dependencies": [
+          6
+        ],
+        "status": "pending",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Implement Shared MessageBubble Composable",
+            "description": "Create a reusable `MessageBubble` composable function in `ui-common` to display individual chat messages. This component should visually distinguish between messages from the user and the AI agent.",
+            "dependencies": [],
+            "details": "In `shared/src/commonMain/kotlin/ui-common/`, create `MessageBubble.kt`. The composable function should accept parameters for message text, sender type (e.g., an enum for User/Agent), and timestamp. Implement basic styling to differentiate sender types.",
+            "status": "pending",
+            "testStrategy": "Write UI component tests in `shared/src/androidTest/` to render the bubble with different inputs (user vs. agent) and verify its appearance. Use screenshot tests to prevent visual regressions on Android."
+          },
+          {
+            "id": 2,
+            "title": "Develop AgentSelector and ToolPanel Composables",
+            "description": "Create the shared UI components for agent selection and tool interaction. The `AgentSelector` will allow users to choose an AI agent, and the `ToolPanel` will display available tools or actions for the current context.",
+            "dependencies": [],
+            "details": "In `shared/src/commonMain/kotlin/ui-common/`, create `AgentSelector.kt` and `ToolPanel.kt`. The `AgentSelector` could be a dropdown or a horizontal list. The `ToolPanel` might be a row of buttons. Define the data classes needed to represent agents and tools for the UI layer.",
+            "status": "pending",
+            "testStrategy": "Manual testing on both Android and Web to verify layout and interactivity. For Android, component tests can be written to check state changes and user interactions, such as selecting an agent from the list."
+          },
+          {
+            "id": 3,
+            "title": "Assemble ChatInterface and Implement UI State Holder",
+            "description": "Create the main `ChatInterface` composable that integrates the `MessageBubble`, `AgentSelector`, and `ToolPanel`. Implement a state holder or ViewModel to manage the UI state and connect it to the `ConversationManager`.",
+            "dependencies": [
+              1,
+              2
+            ],
+            "details": "Create `ChatInterface.kt` in `shared/src/commonMain/kotlin/ui-common/`. This composable will arrange the other components into a complete chat screen layout. Create a `ChatViewModel` that exposes UI state (e.g., list of messages, selected agent) and handles user events (e.g., sending a message).",
+            "status": "pending",
+            "testStrategy": "End-to-end manual testing of the integrated chat screen on both platforms. For Android, write instrumentation tests to simulate a full conversation flow within the `ChatInterface`, verifying that messages are displayed and state updates correctly."
+          }
+        ]
+      },
+      {
+        "id": 8,
+        "title": "Build and Integrate Android Application",
+        "description": "Create the Android application shell, integrate all the shared KMP modules, and implement any necessary platform-specific code for a fully functional app.",
+        "details": "In the `android/` module, set up the main `Activity` using Jetpack Compose. Instantiate the shared view models and managers from the `shared` module and connect them to the Android UI layer. The UI will be built using the shared components from `ui-common`. Handle Android-specifics like lifecycle events and permissions.",
+        "testStrategy": "Write Android instrumentation tests in `android/src/androidTest/` to verify the end-to-end user flow within the app. Test user input, message display, agent handoffs, and tool execution from the UI, ensuring all shared modules are working together correctly.",
+        "priority": "medium",
+        "dependencies": [
+          7
+        ],
+        "status": "pending",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Set Up Android Application Shell with Jetpack Compose",
+            "description": "Create the basic Android application module, configure the main Activity, and set up the Jetpack Compose framework as the UI toolkit.",
+            "dependencies": [],
+            "details": "In the `android/` directory, create a new application module. Configure `build.gradle.kts` with necessary Android and Jetpack Compose dependencies. Set up a single `MainActivity` that uses `setContent` to host Compose UI.",
+            "status": "pending",
+            "testStrategy": "Manually launch the app on an emulator or device to ensure it runs without crashing and displays a placeholder Composable."
+          },
+          {
+            "id": 2,
+            "title": "Integrate Shared KMP Modules into the Android App",
+            "description": "Connect the shared KMP modules (`shared`, `foundation`, `mcp-integration`, `agent-management`, `ui-common`) to the Android application and instantiate core components.",
+            "dependencies": [
+              1
+            ],
+            "details": "Add the shared modules as dependencies in the `android/build.gradle.kts` file. In the Android application's entry point, initialize the shared ViewModels and Managers from the `shared` module.",
+            "status": "pending",
+            "testStrategy": "Compile the application to verify that the shared modules are correctly linked. Use logging to confirm that shared classes like `AgentManager` can be instantiated successfully at app startup."
+          },
+          {
+            "id": 3,
+            "title": "Assemble Android UI using Shared `ui-common` Components",
+            "description": "Build the main user interface screens for the Android application by composing the reusable UI elements defined in the `ui-common` module and connecting them to shared ViewModels.",
+            "dependencies": [
+              2
+            ],
+            "details": "Create Composable functions for each screen (e.g., `ChatScreen`). Use components from `ui-common` like `MessageBubble` and `InputField`. Connect these UI components to the state exposed by the shared ViewModels.",
+            "status": "pending",
+            "testStrategy": "Use Jetpack Compose's `@Preview` annotation to visually inspect each screen in Android Studio. Write basic UI tests using `createComposeRule` to verify that components are displayed correctly with mock data."
+          },
+          {
+            "id": 4,
+            "title": "Implement Android-Specific Lifecycle and Permission Handling",
+            "description": "Handle platform-specific requirements such as Android Activity/Fragment lifecycle events and runtime permissions for features like network access.",
+            "dependencies": [
+              3
+            ],
+            "details": "Use `LaunchedEffect` and `DisposableEffect` in Composables to observe lifecycle events and manage resources. Implement the Android runtime permission flow for `INTERNET` using the built-in Compose APIs for requesting permissions.",
+            "status": "pending",
+            "testStrategy": "Manually test lifecycle events like screen rotation and app backgrounding to ensure UI state is preserved. Manually test the permission request flow by revoking and granting permissions in the device settings."
+          },
+          {
+            "id": 5,
+            "title": "Create Instrumentation Tests for UI Components and Interactions",
+            "description": "Set up the Android instrumentation test suite and write tests to verify individual UI components and simple user interactions within the app.",
+            "dependencies": [
+              4
+            ],
+            "details": "In the `android/src/androidTest/` directory, create test classes using JUnit4 and the Compose Test framework. Use `createComposeRule` to find UI nodes, perform actions like clicks and text input, and assert that the UI state updates correctly.",
+            "status": "pending",
+            "testStrategy": "Run the instrumentation tests on an emulator or physical device via the Gradle command `./gradlew connectedAndroidTest`. Ensure all tests pass and cover critical UI interactions."
+          },
+          {
+            "id": 6,
+            "title": "Validate End-to-End User Flows with Instrumentation Tests",
+            "description": "Write comprehensive end-to-end (E2E) instrumentation tests that simulate complete user journeys, ensuring all integrated modules work together correctly from the UI to the shared logic.",
+            "dependencies": [],
+            "details": "Create E2E test cases that cover flows like sending a message, seeing an agent's response, and triggering a tool execution. These tests will interact with the full app stack, mocking only the network layer if necessary.",
+            "status": "pending",
+            "testStrategy": "Execute the E2E test suite as part of the CI/CD pipeline. The tests should validate the entire flow from UI input to the shared logic and back, confirming the correct behavior of the integrated application."
+          }
+        ]
+      },
+      {
+        "id": 9,
+        "title": "Build and Integrate Web Application (PWA)",
+        "description": "Create the Web application shell as a Progressive Web App (PWA), integrate all the shared KMP modules, and implement any necessary platform-specific JS interop.",
+        "details": "In the `web/` module, use Kotlin/JS with Compose for Web to build the application's entry point (`Main.kt`). Instantiate the shared view models and managers and connect them to the web UI. The UI will be built using the shared components from `ui-common`. Configure the project to be a PWA with a manifest file and a basic service worker.",
+        "testStrategy": "Use a web automation framework like Playwright or Selenium to write end-to-end tests. These tests should run in a browser and simulate user interactions, verifying the same core functionalities as the Android E2E tests to ensure feature parity.",
+        "priority": "medium",
+        "dependencies": [
+          7
+        ],
+        "status": "pending",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Set Up Kotlin/JS Web App Shell with Compose for Web",
+            "description": "Create the initial structure for the web application in the `web/` module. This includes configuring the Gradle build script for Kotlin/JS and Compose for Web, and creating the main entry point `Main.kt`.",
+            "dependencies": [],
+            "details": "In the `web/build.gradle.kts`, add the necessary plugins and dependencies for `kotlin(\"js\")` and `org.jetbrains.compose`. Create the `web/src/jsMain/kotlin/Main.kt` file and set up the basic `renderComposable` block to mount the application.",
+            "status": "pending",
+            "testStrategy": "Manually verify that the basic application shell renders correctly in a web browser after running the appropriate Gradle task (e.g., `jsBrowserDevelopmentRun`)."
+          },
+          {
+            "id": 2,
+            "title": "Integrate Shared KMP Modules and UI Components",
+            "description": "Connect the shared KMP modules (view models, managers) to the web application's UI. Instantiate these shared components within the web app's entry point and wire them to the UI built with shared components from `ui-common`.",
+            "dependencies": [
+              1
+            ],
+            "details": "In `Main.kt`, instantiate the shared view models and managers. Use the shared composables from the `ui-common` module to build the main application UI, passing the shared view model instances to them to handle state and logic.",
+            "status": "pending",
+            "testStrategy": "Run the application in a browser and manually test the core functionalities provided by the shared modules. Verify that UI elements update correctly based on state changes in the shared view models."
+          },
+          {
+            "id": 3,
+            "title": "Configure PWA Manifest and Service Worker",
+            "description": "Convert the web application into a Progressive Web App (PWA) by adding a web app manifest and a basic service worker. This will enable installation on user devices and provide basic offline capabilities.",
+            "dependencies": [
+              2
+            ],
+            "details": "Create a `manifest.json` file in the `web/src/jsMain/resources` directory, defining the app's name, icons, start URL, and display mode. Implement a basic `service-worker.js` to cache essential application assets. Link both the manifest and the service worker in the main HTML file.",
+            "status": "pending",
+            "testStrategy": "Use browser developer tools (like Lighthouse in Chrome) to audit the application and verify that it meets the core PWA installability criteria. Test the app's offline capabilities by disconnecting from the network and reloading the page."
+          }
+        ]
+      },
+      {
+        "id": 10,
+        "title": "Perform Cross-Platform E2E Testing and Optimization",
+        "description": "Conduct comprehensive end-to-end testing on both Android and Web platforms to ensure feature parity, consistent user experience, and optimal performance against the defined success metrics.",
+        "details": "Execute the critical test scenarios from the PRD on both platforms. Identify and fix platform-specific bugs or UI/UX inconsistencies. Use profiling tools (Android Studio Profiler, browser dev tools) to measure performance, specifically targeting the '< 2 second response time for AI agent routing decisions' metric. Refine platform-specific adaptations as needed.",
+        "testStrategy": "Execute a suite of manual and automated E2E tests covering all critical user flows. Performance will be validated by logging and measuring the time between a user sending a query and the routing decision being made. A final QA sign-off will be required for both platforms.",
+        "priority": "medium",
+        "dependencies": [
+          8,
+          9
+        ],
+        "status": "pending",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Design Cross-Platform E2E Test Suite",
+            "description": "Define and document the critical end-to-end test scenarios based on the PRD, covering all major user flows for both Android and Web platforms to ensure comprehensive test coverage.",
+            "dependencies": [],
+            "details": "Create a test plan document outlining scenarios like user login, sending a query, agent routing, agent handoff, and tool usage. Specify expected outcomes and success criteria for each platform.",
+            "status": "pending",
+            "testStrategy": "The test plan document will be reviewed and approved by the project lead to ensure it covers all critical user journeys and success metrics."
+          },
+          {
+            "id": 2,
+            "title": "Execute End-to-End Test Suite on Android",
+            "description": "Systematically run the defined E2E test suite on the Android application to validate functionality, feature parity, and user experience against the test plan.",
+            "dependencies": [
+              1
+            ],
+            "details": "Execute the test cases from the approved test plan on various Android devices and emulators. Log all results, including passes, failures, and any visual or behavioral discrepancies.",
+            "status": "pending",
+            "testStrategy": "All test cases must be executed, and results documented in a test report. Any failures will be logged as bugs in the issue tracker."
+          },
+          {
+            "id": 3,
+            "title": "Execute End-to-End Test Suite on Web",
+            "description": "Systematically run the defined E2E test suite on the Web application to validate functionality, feature parity, and user experience against the test plan.",
+            "dependencies": [
+              1
+            ],
+            "details": "Execute the test cases from the approved test plan on major web browsers (e.g., Chrome, Firefox, Safari). Log all results, including passes, failures, and any UI/UX inconsistencies.",
+            "status": "pending",
+            "testStrategy": "All test cases must be executed, and results documented in a test report. Any failures will be logged as bugs in the issue tracker."
+          },
+          {
+            "id": 4,
+            "title": "Identify and Document Bugs and Inconsistencies",
+            "description": "Consolidate findings from both Android and Web E2E test executions to create a comprehensive and prioritized list of bugs, feature parity gaps, and UI/UX inconsistencies.",
+            "dependencies": [
+              2,
+              3
+            ],
+            "details": "Review test execution logs. For each issue, create a detailed bug report including platform, steps to reproduce, expected vs. actual results, and screenshots/videos. Prioritize issues based on severity.",
+            "status": "pending",
+            "testStrategy": "Each documented bug must be reproducible and have clear acceptance criteria for its resolution. The prioritized list will be reviewed with the development team."
+          },
+          {
+            "id": 5,
+            "title": "Profile Performance of AI Agent Routing on Android",
+            "description": "Use Android Studio Profiler to measure the performance of critical application flows, focusing on the AI agent routing decision time to ensure it meets the <2s metric.",
+            "dependencies": [
+              2
+            ],
+            "details": "Attach the Android Studio Profiler to the running app. Measure the time from a user sending a query to the routing decision being rendered. Identify any bottlenecks in CPU, memory, or network usage.",
+            "status": "pending",
+            "testStrategy": "Performance metrics will be recorded over multiple runs and compared against the '< 2 second' success metric. Any deviations will be documented for optimization."
+          },
+          {
+            "id": 6,
+            "title": "Profile Performance of AI Agent Routing on Web",
+            "description": "Use browser developer tools to measure the performance of critical application flows, focusing on the AI agent routing decision time to ensure it meets the <2s metric.",
+            "dependencies": [
+              3
+            ],
+            "details": "Use the Performance and Network tabs in browser dev tools to analyze the web application. Measure the time from sending a query to the routing decision being displayed. Identify slow network requests or long-running scripts.",
+            "status": "pending",
+            "testStrategy": "Performance metrics will be recorded over multiple runs and compared against the '< 2 second' success metric. Any deviations will be documented for optimization."
+          },
+          {
+            "id": 7,
+            "title": "Refine Platform-Specific Adaptations and Fix Bugs",
+            "description": "Address the identified bugs, inconsistencies, and performance bottlenecks by implementing necessary code changes and refining platform-specific adaptations.",
+            "dependencies": [
+              4,
+              6
+            ],
+            "details": "Work through the prioritized list of bugs and performance issues. Implement fixes in the shared KMP modules or platform-specific code (`android/`, `web/`) as required. Re-run relevant tests to verify fixes.",
+            "status": "pending",
+            "testStrategy": "All high-priority bugs must be resolved and verified via unit or integration tests. A targeted regression test will be performed on the fixed areas to ensure no new issues were introduced."
+          },
+          {
+            "id": 8,
+            "title": "Conduct Final QA Sign-off Process",
+            "description": "Perform a final regression test run on both platforms to confirm all issues are resolved and the application meets all quality standards and performance metrics before release.",
+            "dependencies": [
+              7
+            ],
+            "details": "Execute a full E2E regression suite on both Android and Web. Verify that all critical bugs are fixed and performance metrics are met. Prepare a final QA report and provide official sign-off for both platforms.",
+            "status": "pending",
+            "testStrategy": "The application must pass 100% of the critical path test cases on both platforms and meet all defined performance metrics to receive final sign-off."
+          }
+        ]
+      },
+      {
+        "id": 11,
+        "title": "Integrate Back4App SDK for Configuration Fetching",
+        "description": "Integrate the Back4App KMP SDK to provide core backend services. This includes setting up the SDK, implementing user authentication (login, signup), and fetching the `mcp.json` configuration file. This task provides the foundational backend communication layer for the application.",
+        "status": "pending",
+        "dependencies": [
+          2,
+          12
+        ],
+        "priority": "high",
+        "details": "Create a new module, `backend-integration`, in `shared/src/commonMain/kotlin/`. Add the necessary Back4App KMP SDK dependencies. Implement two core services within this module:\n1. **AuthService**: Handles user authentication. It will expose functions for `login(username, password)` and `signup(username, password, email)`. This service will interact with the Back4App `ParseUser` object, manage session tokens securely, and return `Result` objects with the user session or an `AppError`.\n2. **ConfigFetcher**: Fetches the `mcp.json` file from Back4App's file storage. It will expose a suspend function `fetchMcpConfig(): Result<McpConfig, AppError>`. A serializable data class `McpConfig` will be created to model the JSON structure. \nBoth services will initialize the Back4App SDK using credentials from the `foundation` module's configuration system.",
+        "testStrategy": "Write comprehensive unit tests in `shared/src/commonTest/` for all services in the `backend-integration` module. Mock the Back4App SDK client to simulate API responses without making actual network calls.\n**AuthService Tests:**\n1. Successful login with valid credentials.\n2. Failed login with invalid credentials.\n3. Successful signup with new user data.\n4. Failed signup with a username that already exists.\n**ConfigFetcher Tests:**\n1. Successful fetch and deserialization of a valid `mcp.json` string.\n2. Simulated network failure, returning a network-related `AppError`.\n3. Attempt to parse malformed JSON, returning a parsing-related `AppError`.\n4. 'File not found' response from the mock client.",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Setup `backend-integration` Module and Dependencies",
+            "description": "Create the Gradle module `backend-integration` and add the Back4App KMP SDK dependencies to its `build.gradle.kts` file.",
+            "dependencies": [],
+            "details": "In the `shared/` directory, create a new module named `backend-integration`. Configure its `build.gradle.kts` to be a KMP library and add the latest version of the Back4App KMP SDK as a common dependency.",
+            "status": "pending",
+            "testStrategy": "Verify that the project builds successfully after adding the new module and dependencies. Ensure the Back4App SDK classes are accessible from `commonMain` within the new module."
+          },
+          {
+            "id": 2,
+            "title": "Implement User Authentication Service",
+            "description": "Create an `AuthService` to handle user login and signup by interacting with the Back4App `ParseUser` class.",
+            "dependencies": [
+              1
+            ],
+            "details": "Implement an `AuthService` class in the `backend-integration` module. It should have `login` and `signup` methods that take user credentials, call the corresponding Back4App SDK functions, and handle session management. Use the `Result` type from the `foundation` module for return values.",
+            "status": "pending",
+            "testStrategy": "Unit tests will be created in a separate subtask. Manual testing can be done by calling the service methods in a test file and checking the output against the Back4App dashboard."
+          },
+          {
+            "id": 3,
+            "title": "Implement MCP Configuration Fetcher Service",
+            "description": "Create a `ConfigFetcher` service to download and parse the `mcp.json` file from Back4App file storage.",
+            "dependencies": [
+              1
+            ],
+            "details": "Implement a `ConfigFetcher` class that uses the Back4App SDK to retrieve the `mcp.json` file. Create a `McpConfig` data class annotated with `@Serializable`. The fetch method should handle JSON parsing using `kotlinx.serialization` and return a `Result<McpConfig, AppError>`.",
+            "status": "pending",
+            "testStrategy": "Unit tests will be created in a separate subtask. For manual verification, place a sample `mcp.json` in the Back4App backend and confirm the service can fetch and parse it correctly."
+          },
+          {
+            "id": 4,
+            "title": "Write Unit Tests for AuthService",
+            "description": "Develop unit tests for the `AuthService`, mocking the SDK to cover login and signup success and failure scenarios.",
+            "dependencies": [
+              2
+            ],
+            "details": "In `shared/src/commonTest/`, create a test suite for `AuthService`. Use a mocking framework to mock the `ParseUser` and related Back4App SDK components. Test cases should cover successful login/signup, incorrect credentials, and network errors.",
+            "status": "pending",
+            "testStrategy": "Run the test suite and ensure all tests pass. Code coverage for the `AuthService` should be above 80%. Verify that the mock is being used and no actual network calls are made."
+          },
+          {
+            "id": 5,
+            "title": "Write Unit Tests for ConfigFetcher",
+            "description": "Develop unit tests for the `ConfigFetcher`, mocking the SDK to cover successful parsing, network errors, and malformed data.",
+            "dependencies": [
+              3
+            ],
+            "details": "In `shared/src/commonTest/`, create a test suite for `ConfigFetcher`. Mock the Back4App file download functionality. Test cases must include: successful fetch and parse, file not found error, network error, and malformed JSON error.",
+            "status": "pending",
+            "testStrategy": "Run the test suite and ensure all specified scenarios are covered and pass. Confirm that the service correctly maps different SDK exceptions to the appropriate `AppError` type."
+          }
+        ]
+      },
+      {
+        "id": 12,
+        "title": "Prepare Back4App Backend and Schema",
+        "description": "Set up the Back4App application, define necessary data classes like '_User' and 'McpConfiguration', and configure their schemas and security permissions in the Back4App dashboard.",
+        "details": "Log in to the Back4App dashboard and create a new application for the project. Define the `McpConfiguration` class to store the `mcp.json` file; add a column named `configFile` of type `File` and a `version` column of type `String`. Review the default `_User` class for standard authentication fields. Configure Class-Level Permissions (CLPs) for `McpConfiguration` to be publicly readable but writable only by administrators. Securely document the Application ID and Client Key for use in subsequent SDK integration tasks.",
+        "testStrategy": "Log into the Back4App dashboard and verify the `McpConfiguration` class and its schema (`configFile`, `version`) exist as specified. Check the Class-Level Permissions to confirm public read and restricted write access. Manually create a test object in the `McpConfiguration` class and upload a sample JSON file to the `configFile` field to ensure the schema is fully functional.",
+        "status": "pending",
+        "dependencies": [
+          1
+        ],
+        "priority": "medium",
+        "subtasks": []
+      },
+      {
+        "id": 13,
+        "title": "Implement Backend API Client",
+        "description": "Create a Ktor-based HTTP client to facilitate communication with the backend n8n workflow. This client will be responsible for sending user queries and receiving AI-generated responses, handling authentication via session tokens.",
+        "details": "Create a new class, `N8nApiClient`, within the `backend-integration` module. This client will use Ktor for HTTP requests and `kotlinx.serialization` for JSON parsing. It should have a primary function, `sendQuery(query: String)`, which takes a user's message, retrieves the current user session token from the `AuthService` (from Task 11), and includes it in the Authorization header of the POST request to the n8n endpoint. The endpoint URL will be retrieved from the `AppConfig` (from Task 2). Define serializable data classes for the request and response payloads. The implementation must gracefully handle network errors and non-2xx responses, mapping them to the standardized `AppError` types.",
+        "testStrategy": "Write unit tests for the `N8nApiClient` in `shared/src/commonTest/` using Ktor's `MockEngine`. Create a test case to verify that a successful 200 OK response is correctly deserialized into the response data class. Add a test to ensure the `Authorization` header is correctly populated with the session token from a mocked `AuthService`. Implement tests for failure scenarios, including a 401 Unauthorized response and a 500 Internal Server Error, verifying that they are mapped to the appropriate `AppError` types.",
+        "status": "pending",
+        "dependencies": [
+          2,
+          11
+        ],
+        "priority": "medium",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Implement N8nApiClient Class with Ktor and Serialization",
+            "description": "Create the basic structure of the `N8nApiClient` class in the `backend-integration` module. This includes setting up the Ktor HttpClient, defining serializable data classes for the request and response payloads using `kotlinx.serialization`, and creating the initial `sendQuery` function signature.",
+            "dependencies": [],
+            "details": "Create a new file for `N8nApiClient`. Define `N8nRequest(query: String)` and `N8nResponse(answer: String)` data classes with the `@Serializable` annotation. Initialize a Ktor `HttpClient` with the `ContentNegotiation` plugin configured for JSON.",
+            "status": "pending",
+            "testStrategy": "Unit tests will be created in a subsequent task, but initial compilation and basic structure validation should be performed."
+          },
+          {
+            "id": 2,
+            "title": "Integrate AuthService and AppConfig into N8nApiClient",
+            "description": "Enhance the `N8nApiClient` to fetch the n8n endpoint URL from `AppConfig` and the user session token from `AuthService`. Implement the logic within the `sendQuery` function to include the session token in the 'Authorization' header of the POST request.",
+            "dependencies": [
+              1
+            ],
+            "details": "Inject `AppConfig` and `AuthService` as dependencies into `N8nApiClient`. In the `sendQuery` method, call `appConfig.getN8nEndpoint()` to get the URL and `authService.getSessionToken()` for the token. Add the token to the request header using `header(HttpHeaders.Authorization, \"Bearer $token\")`.",
+            "status": "pending",
+            "testStrategy": "Manual testing by logging the constructed URL and headers. Formal unit tests will be added in the next subtask to mock these dependencies and verify the request."
+          },
+          {
+            "id": 3,
+            "title": "Implement Unit Tests and Error Handling for N8nApiClient",
+            "description": "Write comprehensive unit tests for the `N8nApiClient` using Ktor's `MockEngine`. Implement robust error handling to gracefully manage network issues and non-2xx HTTP responses, mapping them to the standardized `AppError` types.",
+            "dependencies": [
+              2
+            ],
+            "details": "In `shared/src/commonTest/`, create `N8nApiClientTest`. Use `MockEngine` to simulate various responses: a 200 OK with valid JSON, a 401 Unauthorized, a 500 Internal Server Error, and a network failure. Verify that the client correctly deserializes success responses and maps error cases to the appropriate `AppError`.",
+            "status": "pending",
+            "testStrategy": "The tests should cover success cases, authentication failures (401/403), server errors (5xx), and client errors (4xx), ensuring each maps to a specific `Result.Failure(AppError)`."
+          }
+        ]
+      }
+    ],
+    "metadata": {
+      "created": "2025-10-25T08:35:52.354Z",
+      "updated": "2025-10-25T09:22:55.676Z",
+      "description": "Tasks for master context"
+    }
+  }
+}
