@@ -4,8 +4,8 @@ This document outlines the technologies, libraries, and development setup for th
 
 ## Core Technologies
 
-*   **Kotlin Multiplatform (1.9.10):** The project is built using Kotlin Multiplatform to share code between the Android and Web targets.
-*   **Jetpack Compose (1.5.1):** The user interface for both Android and Web is built with Jetpack Compose, enabling a declarative and modern UI development approach.
+*   **Kotlin Multiplatform (2.0.0):** The project is built using Kotlin Multiplatform to share code between the Android and Web targets.
+*   **Jetpack Compose (1.6.10):** The user interface for both Android and Web is built with Jetpack Compose, enabling a declarative and modern UI development approach.
 *   **Gradle:** The project uses Gradle for dependency management and build automation.
 
 ## Android-Specific Technologies
@@ -31,7 +31,7 @@ This document outlines the technologies, libraries, and development setup for th
 
 ## Development Setup
 
-*   **Java Version:** The project is configured to use Java 1.8.
+*   **Java Version:** The project is configured to use Java 17.
 *   **Android Studio / IntelliJ IDEA:** The recommended IDE for development is Android Studio or IntelliJ IDEA with the Kotlin Multiplatform Mobile plugin.
 *   **Gradle Wrapper:** The project includes a Gradle wrapper for consistent builds across different development environments.
 
