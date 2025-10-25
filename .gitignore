@@ -28,6 +28,9 @@ Thumbs.db
 # Python virtual environment
 .venv/
 
+# Android SDK setup script
+setup-android-env.sh
+
 # Kotlin
 .kotlin/
 
